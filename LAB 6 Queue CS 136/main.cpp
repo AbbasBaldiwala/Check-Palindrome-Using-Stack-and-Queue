@@ -15,7 +15,10 @@ enum Menu {
 };
 
 
-//linked queue
+//linked queue classes
+
+class EmptyQueue {};
+
 struct Node {
 	char letter;
 	Node* link;
@@ -29,7 +32,7 @@ public:
 
 	bool isFullQueue() const { return false; }
 
-	void initializeQueue();
+	void ClearQueue();
 
 	char front() const;
 
@@ -41,17 +44,18 @@ public:
 
 	LinkedQueue();
 
-	LinkedQueue(const LinkedQueue& otherQuue);
+	LinkedQueue(const LinkedQueue& otherQueue);
 
-	~LinkedQueue() { initializeQueue(); }
+	~LinkedQueue() { ClearQueue(); }
 
-	string ToString();
 private:
-	Node* queueFront;
-	Node* queueRear;
+	Node* queueFront = nullptr;
+	Node* queueRear = nullptr;
+
+	void copyQueue(const LinkedQueue& other);
 };
 
-
+//Stack classes
 
 class EmptyStack {};
 
@@ -73,7 +77,7 @@ public:
 
 	void Pop();
 
-	string ToString();
+	int GetStackSize() { return stackTop; }
 private:
 	char expression[MAX_EXPRESSION_SIZE];
 	int stackTop;
@@ -88,9 +92,9 @@ string ProcessString(string); //removes all non alpha characters and apostrophes
 
 string ToLower(string); //converts string to lowercase
 
-void PopulateStack(Stack&, string); // creates a stack filled with the processed string
+void PopulateStackAndQueue(Stack&, LinkedQueue&,string); // creates a stack filled with the processed string
 
-void LoadQueue(LinkedQueue&, string);
+bool IsPalindrome(LinkedQueue&, Stack&, string& reversedString); //checks if the expression is a palindrome
 
 int main() {
 	int userChoice;
@@ -118,10 +122,16 @@ int main() {
 				PrintToFileAndScreen(inFileName, outFileName, border, header);
 			}
 			catch (const EmptyStack&) {
-				cout << "Exception caught: Unable to pop or peek from an empty stack.\n";
+				std::cerr << "Exception caught: Unable to pop or peek from an empty stack.\n";
 			}
 			catch (const FullStack&) {
-				cout << "Exception caught: Unable to push onto a full stack.\n";
+				std::cerr << "Exception caught: Unable to push onto a full stack.\n";
+			}
+			catch (const EmptyQueue&) {
+				std::cerr << "Exception caught: Unable to delete from an empty queue.\n";
+			}
+			catch (const std::bad_alloc error) {
+				std::cerr << "Exception caught, Could not allocate memory: " << error.what() << "\n";
 			}
 			break;
 		case QUIT:
@@ -135,22 +145,61 @@ int main() {
 
 }
 
+//LINKED QUEUE CLASS DEFINITIONS
 
-const LinkedQueue& LinkedQueue::operator=(const LinkedQueue& otherQueue) {
+void LinkedQueue::copyQueue(const LinkedQueue& otherQueue) {
+	Node* newNode;
+	Node* current; 
+	if (queueFront != nullptr) {
+		ClearQueue();
+	}
+	if (otherQueue.queueFront == nullptr){
+		queueFront = nullptr;
+		queueRear = nullptr;
+	}
+	else{
+		current = otherQueue.queueFront;
+		queueFront = new Node; 
+		queueFront->letter = current->letter;
+		queueFront->link = nullptr;
+		
+		queueRear = queueFront; 
+		
+		current = current->link; 
+
+		while (current != nullptr){
+			newNode = new Node; 
+			newNode->letter = current->letter; 
+			newNode->link = nullptr; 
+			
+			queueRear->link = newNode; 
+			queueRear = newNode; 
+			
+			current = current->link;
+			
+		}
+	}
+}
+
+const LinkedQueue& LinkedQueue::operator=(const LinkedQueue& RHS) {
+	if (this != &RHS)
+	{
+		copyQueue(RHS);
+	}
+	return *this;
 }
 
 LinkedQueue::LinkedQueue(const LinkedQueue& otherQueue) {
-
+	copyQueue(otherQueue);
 }
 
-void LinkedQueue::initializeQueue() {
+void LinkedQueue::ClearQueue() {
 	Node* temp;
 
 	while (queueFront != nullptr) {
 		temp = queueFront;
 		queueFront = queueFront->link;
 		delete temp;
-		//temp = nullptr;
 	}
 	queueRear = nullptr;
 }
@@ -188,14 +237,13 @@ void LinkedQueue::deleteQueue() {
 		temp = queueFront;
 		queueFront = queueFront->link;
 		delete temp;
-		//temp = nullptr;
 
 		if (queueFront == nullptr) {
 			queueRear = nullptr;
 		}
 	}
 	else {
-		//throw exception
+		throw EmptyQueue();
 	}
 }
 
@@ -204,26 +252,9 @@ LinkedQueue::LinkedQueue() {
 	queueRear = nullptr;
 }
 
-string LinkedQueue::ToString() {
-	stringstream ss;
-	while (!isEmptyQueue()) {
-		ss << front();
-		deleteQueue();
-	}
-	ss << setw(MAX_EXPRESSION_SIZE);
-	return ss.str();
-}
 
-string Stack::ToString() {
-	stringstream ss;
-	int size = stackTop;
-	for (int i = 0; i < size; i++) {
-		ss << Peek();
-		Pop();
-	}
-	ss << setw(MAX_EXPRESSION_SIZE);
-	return ss.str();
-}
+//STACK CLASS DEFINITIONS
+
 
 void Stack::Push(char newChar) {
 	if (!IsFullStack()) {
@@ -253,6 +284,10 @@ void Stack::Pop() {
 	}
 }
 
+
+//MAIN DEFINITIONS
+
+
 void ClearInvalidInput(string errMsg) {
 	cout << "\n" << errMsg << "\n";
 	cin.clear();
@@ -262,7 +297,7 @@ void ClearInvalidInput(string errMsg) {
 void PrintToFileAndScreen(string inputFileName, string outputFileName, string border, string header) {
 	ifstream inputFile(inputFileName);
 	ofstream outFile(outputFileName);
-	string tempString, reversedString, originalString, isPalindrome;
+	string tempString, reversedString, originalString, yesOrNo = "";
 	Stack tempStack;
 	LinkedQueue tempQueue, tempQueue1;
 
@@ -284,26 +319,23 @@ void PrintToFileAndScreen(string inputFileName, string outputFileName, string bo
 	while (!inputFile.eof()) {
 		getline(inputFile, tempString);
 		if (tempString.length() <= MAX_EXPRESSION_SIZE) {
-			PopulateStack(tempStack, tempString);
-			LoadQueue(tempQueue, tempString);
 
-			reversedString = tempStack.ToString();
-			originalString = tempQueue.ToString();
+			PopulateStackAndQueue(tempStack, tempQueue, tempString);
 
-			if (reversedString == originalString) {
-				isPalindrome = "YES";
+			if (IsPalindrome(tempQueue, tempStack, reversedString)) {
+				yesOrNo = "YES";
 			}
 			else {
-				isPalindrome = "NO";
+				yesOrNo = "NO";
 			}
-
+		
 			//prints to file
 			outFile << setw(MAX_EXPRESSION_SIZE + 1) << tempString
-				<< setw(MAX_EXPRESSION_SIZE) << reversedString << isPalindrome << "\n";
+				<< setw(MAX_EXPRESSION_SIZE) << reversedString << yesOrNo << "\n";
 
 			//prints to screen
 			cout << setw(MAX_EXPRESSION_SIZE + 1) << tempString
-				<< setw(MAX_EXPRESSION_SIZE) << reversedString << isPalindrome <<"\n";
+				<< setw(MAX_EXPRESSION_SIZE) << reversedString << yesOrNo <<"\n";
 		}
 
 	}
@@ -313,33 +345,42 @@ void PrintToFileAndScreen(string inputFileName, string outputFileName, string bo
 	outFile.close();
 }
 
-void PopulateStack(Stack& stack, string expression) {
+void PopulateStackAndQueue(Stack& stack, LinkedQueue& queue, string expression) {
 	expression = ToLower(expression);
 	expression = ProcessString(expression);
 
-	int strLen = expression.length();
+	size_t strLen = expression.length();
 
 	for (int i = 0; i < strLen; i++) {
 		stack.Push(expression[i]);
+		queue.addQueue(expression[i]);
 	}
 
 }
 
-void LoadQueue(LinkedQueue& queue, string expression) {
-	expression = ToLower(expression);
-	expression = ProcessString(expression);
+bool IsPalindrome(LinkedQueue& queue, Stack& stack, string& reversedString) {
+	int size = stack.GetStackSize();
+	reversedString = "";
+	char chFromStack, chFromQueue;
+	bool isPalindrome = true;
+	for (int i = 0; i < size; i++) {
+		chFromStack = stack.Peek();
+		stack.Pop();
 
-	int strLen = expression.length();
+		chFromQueue = queue.front();
+		queue.deleteQueue();
 
-	for (int i = 0; i < strLen; i++) {
-		char ch = expression[i];
-		queue.addQueue(ch);
+		if (chFromStack != chFromQueue) {
+			isPalindrome = false;
+		}
+		reversedString += chFromStack;
 	}
+	return isPalindrome;
 }
 
 string ProcessString(string str) {
 	string processedString = "";
-	int strLen = str.length();
+	size_t strLen = str.length();
 	for (int i = 0; i < strLen; i++) {
 		char ch = str[i];
 		if (((ch >= 'a') && (ch <= 'z'))) {

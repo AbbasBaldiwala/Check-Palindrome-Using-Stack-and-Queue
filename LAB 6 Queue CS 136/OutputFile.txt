@@ -1,0 +1,11 @@
+INPUT                                                             REVERSED                                                         PALINDROME
+YES!!! you can dance!                                             ecnadnacuoysey                                                   NO
+Hello, I'm Abbas                                                  sabbaiolleh                                                      NO
+z y x w v u t s r q p o n m l k j i h g f e d c b a               abcdefghijklmnopqrstuvwxyz                                       NO
+!!!!!!!!!!!!!!!!!!!!!A!!!!!!!!!!!!!!!!!!!!!!!                     a                                                                YES
+This expression is exactly 65 characters long and should print___ tnirpdluohsdnagnolsretcarahcyltcaxesinoisserpxesiht              NO
+ Matching cover pAGE, header, and sidebar.                        rabedisdnaredaehegaprevocgnihctam                                NO
+I love to Code!!!!                                                edocotevoli                                                      NO
+CS 136 is really fun                                              nufyllaersisc                                                    NO
+D.S. Malik - C++ Programming                                      gnimmargorpckilamsd                                              NO
+Borrow or rob?                                                    borroworrob                                                      YES
