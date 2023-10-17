@@ -15,7 +15,8 @@ enum Menu {
 };
 
 
-//linked queue classes
+//LINKED QUEUE
+
 
 class EmptyQueue {};
 
@@ -55,7 +56,9 @@ private:
 	void copyQueue(const LinkedQueue& other);
 };
 
-//Stack classes
+
+//STACK
+
 
 class EmptyStack {};
 
@@ -83,6 +86,10 @@ private:
 	int stackTop;
 };
 
+
+//FUNCTION DECLARATIONS
+
+
 void ClearInvalidInput(string errMsg); //clears cin, clears the keyboard buffer, prints an error message
 
 //prints the stack in reverse order to the file and screen
@@ -95,6 +102,7 @@ string ToLower(string); //converts string to lowercase
 void PopulateStackAndQueue(Stack&, LinkedQueue&,string); // creates a stack filled with the processed string
 
 bool IsPalindrome(LinkedQueue&, Stack&, string& reversedString); //checks if the expression is a palindrome
+
 
 int main() {
 	int userChoice;
@@ -145,7 +153,9 @@ int main() {
 
 }
 
+
 //LINKED QUEUE CLASS DEFINITIONS
+
 
 void LinkedQueue::copyQueue(const LinkedQueue& otherQueue) {
 	Node* newNode;
@@ -405,6 +415,11 @@ string ToLower(string str) {
 	return lowerCaseStr;
 }
 
+
+//OUTPUT/TESTS
+/***********************************************************************************************************************************************/
+
+
 //TEST 1
 /*
 
@@ -463,3 +478,5 @@ Menu:
 Input file not found. Exiting the program.
 Press any key to continue . . .
 */
+
+/***********************************************************************************************************************************************/
