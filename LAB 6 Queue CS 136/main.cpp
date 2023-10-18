@@ -1,14 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <iomanip>
 #include <cassert>
+#include <iomanip>
 #include <limits>
 
 using namespace std;
 
 const int MAX_EXPRESSION_SIZE = 65, LETTER_OFFSET_IN_ASCII = 32,
-BORDER_LENGTH = (MAX_EXPRESSION_SIZE + 1) * 2 + 11;
+BORDER_LENGTH = (MAX_EXPRESSION_SIZE + 1) * 2 + 10;
 
 enum Menu {
 	PRINT_TO_FILE_AND_SCREEN = 1, QUIT = 2
@@ -29,19 +29,19 @@ class LinkedQueue {
 public:
 	const LinkedQueue& operator=(const LinkedQueue& otherQueue);
 
-	bool isEmptyQueue() const { return queueFront == nullptr; }
+	bool IsEmptyQueue() const { return queueFront == nullptr; }
 
-	bool isFullQueue() const { return false; }
+	bool IsFullQueue() const { return false; }
 
 	void ClearQueue();
 
-	char front() const;
+	char Front() const;
 
-	char back() const;
+	char Back() const;
 
-	void addQueue(char);
+	void AddQueue(char);
 
-	void deleteQueue();
+	void DeQueue();
 
 	LinkedQueue();
 
@@ -95,13 +95,13 @@ void ClearInvalidInput(string errMsg); //clears cin, clears the keyboard buffer,
 //prints the stack in reverse order to the file and screen
 void PrintToFileAndScreen(string inFileName, string outFileName, string border, string header);
 
-string ProcessString(string); //removes all non alpha characters and apostrophes
+string ProcessString(string expression); //removes all non alpha characters and apostrophes
 
-string ToLower(string); //converts string to lowercase
+string ToLower(string expression); //converts string to lowercase
 
-void PopulateStackAndQueue(Stack&, LinkedQueue&,string); // creates a stack filled with the processed string
+void PopulateStackAndQueue(Stack& stack, LinkedQueue& queue, string expression); // creates a stack filled with the processed string
 
-bool IsPalindrome(LinkedQueue&, Stack&, string& reversedString); //checks if the expression is a palindrome
+bool IsPalindrome(LinkedQueue& queue, Stack& stack, string& reversedExpression); //checks if the expression is a palindrome
 
 
 int main() {
@@ -160,14 +160,13 @@ int main() {
 void LinkedQueue::copyQueue(const LinkedQueue& otherQueue) {
 	Node* newNode;
 	Node* current; 
-	if (queueFront != nullptr) {
-		ClearQueue();
-	}
+
 	if (otherQueue.queueFront == nullptr){
 		queueFront = nullptr;
 		queueRear = nullptr;
 	}
 	else{
+		ClearQueue();
 		current = otherQueue.queueFront;
 		queueFront = new Node; 
 		queueFront->letter = current->letter;
@@ -214,7 +213,7 @@ void LinkedQueue::ClearQueue() {
 	queueRear = nullptr;
 }
 
-void LinkedQueue::addQueue(char newLetter) {
+void LinkedQueue::AddQueue(char newLetter) {
 	Node* newNode;
 	newNode = new Node;
 	newNode->letter = newLetter;
@@ -230,20 +229,20 @@ void LinkedQueue::addQueue(char newLetter) {
 	}
 }
 
-char LinkedQueue::front() const {
+char LinkedQueue::Front() const {
 	assert(queueFront != nullptr);
 	return queueFront->letter;
 }
 
-char LinkedQueue::back() const {
+char LinkedQueue::Back() const {
 	assert(queueRear != nullptr);
 	return queueRear->letter;
 }
 
-void LinkedQueue::deleteQueue() {
+void LinkedQueue::DeQueue() {
 	Node* temp;
 	
-	if (!isEmptyQueue()) {
+	if (!IsEmptyQueue()) {
 		temp = queueFront;
 		queueFront = queueFront->link;
 		delete temp;
@@ -363,7 +362,7 @@ void PopulateStackAndQueue(Stack& stack, LinkedQueue& queue, string expression) 
 
 	for (int i = 0; i < strLen; i++) {
 		stack.Push(expression[i]);
-		queue.addQueue(expression[i]);
+		queue.AddQueue(expression[i]);
 	}
 
 }
@@ -377,8 +376,8 @@ bool IsPalindrome(LinkedQueue& queue, Stack& stack, string& reversedString) {
 		chFromStack = stack.Peek();
 		stack.Pop();
 
-		chFromQueue = queue.front();
-		queue.deleteQueue();
+		chFromQueue = queue.Front();
+		queue.DeQueue();
 
 		if (chFromStack != chFromQueue) {
 			isPalindrome = false;
@@ -416,13 +415,12 @@ string ToLower(string str) {
 }
 
 
-//OUTPUT/TESTS
+// OUTPUT/TESTS
 /***********************************************************************************************************************************************/
 
 
 //TEST 1
 /*
-
 Menu:
 1. Print expressions to a file and screen
 2. Quit
@@ -440,6 +438,7 @@ I love to Code!!!!                                                edocotevoli   
 CS 136 is really fun                                              nufyllaersisc                                                    NO
 D.S. Malik - C++ Programming                                      gnimmargorpckilamsd                                              NO
 Borrow or rob?                                                    borroworrob                                                      YES
+tA;co Cat                                                         tacocat                                                          YES
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -478,5 +477,6 @@ Menu:
 Input file not found. Exiting the program.
 Press any key to continue . . .
 */
+
 
 /***********************************************************************************************************************************************/
