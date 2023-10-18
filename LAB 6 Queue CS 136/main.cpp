@@ -31,8 +31,6 @@ public:
 
 	bool IsEmptyQueue() const { return queueFront == nullptr; }
 
-	bool IsFullQueue() const { return false; }
-
 	void ClearQueue();
 
 	char Front() const;
